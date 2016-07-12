@@ -1,0 +1,10 @@
+main
+	ButtonCheck
+		Button
+			Delay_500us
+	rand
+		srand
+		Mul_32x32
+	Div_16x16_S
+Button_Interrupt
+	ButtonCheck

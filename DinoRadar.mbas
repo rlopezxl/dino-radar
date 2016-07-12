@@ -1,0 +1,196 @@
+program Dino_Radar
+
+dim selection as byte
+dim led as byte
+dim counter as longword
+dim maxsel as byte
+dim oldstate1 as bit
+dim oldstate2 as bit
+dim oldstate3 as bit
+dim random as bit
+dim allon as bit
+
+sub procedure ButtonCheck
+           if (Button(PINB, 0, 1, 1) <> 0) then
+              oldstate1 = 1
+           end if
+           if (oldstate1 and Button(PINB, 0, 1, 0)) then
+              inc(selection)
+              random = 0
+              oldstate1 = 0
+              allon = 0
+           end if
+
+           if (Button(PINB, 1, 1, 1) <> 0) then
+              oldstate2 = 1
+           end if
+           if (oldstate2 and Button(PINB, 1, 1, 0)) then
+              allon = not allon
+              oldstate2 = 0
+           end if
+
+           if (Button(PINB, 2, 1, 1) <> 0) then
+              oldstate3 = 1
+           end if
+           if (oldstate3 and Button(PINB, 2, 1, 0)) then
+              random = not random
+              inc(selection)
+              oldstate3 = 0
+              allon = 0
+           end if
+end sub
+
+sub procedure Button_Interrupt() iv IVT_ADDR_PCINT1
+    ButtonCheck
+end sub
+
+main:
+     SREG_I_bit = 1
+     PCIE1_bit = 1
+     PCINT8_bit = 1
+     PCINT9_bit = 1
+     PCINT10_bit = 1
+     
+     DDB0_bit = 0
+     DDB1_bit = 0
+     DDB2_bit = 0
+     DDRA = 0xFF
+     
+     selection = 0
+     allon = 0
+     maxsel = 9
+
+     oldstate1 = 0
+     oldstate2 = 0
+     oldstate3 = 0
+     
+     while (true)
+           ButtonCheck
+           
+           if (selection > maxsel) then
+              selection = 0
+           end if
+           
+           if (allon = 1) then
+              for led = 0 to 7
+                  PORTA.led = 1
+                  delay_ms(2)
+                  PORTA.led = 0
+              next led
+              continue
+           end if
+
+           inc(counter)
+           select case (selection)
+           case 0
+              for led = 0 to 7
+                  PORTA.led = 1
+                  delay_ms(75)
+                  PORTA.led = 0
+                  counter = counter + 3
+              next led
+           case 1
+              for led = 7 to 0 step -1
+                  PORTA.led = 1
+                  delay_ms(75)
+                  PORTA.led = 0
+                  counter = counter + 3
+              next led
+           case 2
+              for led = 0 to 7 step 2
+                  PORTA.(led) = 1
+                  delay_ms(100)
+                  PORTA.(led) = 0
+              next led
+              counter = counter + 20
+              for led = 1 to 7 step 2
+                  PORTA.(led) = 1
+                  delay_ms(100)
+                  PORTA.(led) = 0
+              next led
+           case 3
+              for led = 0 to 7 step 2
+                  PORTA.(7-led) = 1
+                  delay_ms(100)
+                  PORTA.(7-led) = 0
+              next led
+              counter = counter + 20
+              for led = 1 to 7 step 2
+                  PORTA.(7-led) = 1
+                  delay_ms(100)
+                  PORTA.(7-led) = 0
+              next led
+           case 4, 6
+                for led = 0 to 7
+                    PORTA.led = 1
+                    select case (led)
+                     case 6
+                          PORTA.0 = 1
+                     case 7
+                          PORTA.1 =1
+                     case else
+                          PORTA.(led+2) = 1
+                     end select
+                    delay_ms(150)
+                    PORTA = 0
+                    counter = counter + 3
+                    if (selection > 5) then
+                       delay_ms(150)
+                       counter = counter + 2
+                    end if
+                    if (selection <> 4) and (selection <> 6) then
+                       break
+                    end if
+                next led
+           case 5, 7
+                for led = 7 to 0 step -1
+                    PORTA.led = 1
+                    select case (led)
+                     case 1
+                          PORTA.7 = 1
+                     case 0
+                          PORTA.6 = 1
+                     case else
+                          PORTA.(led-2) = 1
+                     end select
+                    delay_ms(150)
+                    PORTA = 0
+                    counter = counter + 3
+                    if (selection > 6) then
+                       delay_ms(150)
+                       counter = counter + 2
+                    end if
+                    if (selection <> 5) and (selection <> 7) then
+                       break
+                    end if
+                next led
+           case 8
+              for led = 0 to 7 step 2
+                  PORTA.led = 1
+                  delay_ms(2)
+                  PORTA.led = 0
+              next led
+              counter = counter + 5
+              delay_ms(50)
+              for led = 1 to 7 step 2
+                  PORTA.led = 1
+                  delay_ms(2)
+                  PORTA.led = 0
+              next led
+              delay_ms(50)
+           case 9
+              led = rand() mod 8
+              PORTA.led = 1
+              delay_ms(50)
+              PORTA.led = 0
+           end select
+
+           if (counter > 250) then
+              counter = 0
+              if (random = 1) then
+                 inc(selection)
+              end if
+           end if
+     wend
+     
+end.

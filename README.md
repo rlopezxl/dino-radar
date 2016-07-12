@@ -1,16 +1,16 @@
 # Dino Radar V1
 
-This is a simple LED toy that I built for my son.
+This is a simple LED toy that I built for my son.  It flashes 8 different red LEDs using various patterns.
 
 View it in action here: https://www.instagram.com/p/BGTCjoSJ_YR
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Clone to your local machine and open the project in mikroBasic PRO for AVR.
 
 ### Circuit
 
-View my hand drawn [schematic](schematic.png).  I will add an eagle schematic later.
+View my hand drawn [schematic](schematic.png).
 
 Required components:
 
